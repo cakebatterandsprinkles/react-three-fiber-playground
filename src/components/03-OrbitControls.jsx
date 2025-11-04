@@ -21,6 +21,14 @@ const OrbitControlsExp = () => {
   const cubeRef = useRef();
 
   useFrame((state, delta) => {
+    // if you want to move the camera in the x and z axis (in a circle around an object), you need to create an angle and provide sin(x) and cos(z)
+    // you can also provide the center point for the camera with "lookAt" property
+    // For bigger or smaller circles multiply the sin and cos values
+    const angle = state.clock.elapsedTime;
+    state.camera.position.x = Math.sin(angle);
+    state.camera.position.z = Math.cos(angle);
+    state.camera.lookAt(0, 0, 0);
+
     cubeRef.current.rotation.y += delta;
   });
 
