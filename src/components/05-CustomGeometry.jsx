@@ -1,11 +1,13 @@
 // Creating custom geometries:
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 const CustomGeometry = () => {
   // Custom objects are created by individual triangles. For 10 triangles, you need 10*3 vertices:
   const verticesCount = 10 * 3;
+
+  const geometryRef = useRef();
 
   // Without useMemo, each time the component re-renders, the computer has to compute and draw the same triangles
   const positions = useMemo(() => {
@@ -18,12 +20,17 @@ const CustomGeometry = () => {
     }
 
     return positions;
+  }, [verticesCount]);
+
+  useEffect(() => {
+    geometryRef.current.computeVertexNormals();
   }, []);
 
   return (
     <>
       <mesh>
-        <bufferGeometry>
+        {/* For correct lightning, the mesh needs to have a "normal" attribute, since the materials need this attribute to calculate lighting per-pixel  */}
+        <bufferGeometry ref={geometryRef}>
           {/* attaches to 'geometry.attributes.position' */}
           <bufferAttribute
             attach="attributes-position"
@@ -33,7 +40,12 @@ const CustomGeometry = () => {
           />
         </bufferGeometry>
         {/* to make both sides of the triangle visible, you need to use THREE.DoubleSide */}
-        <meshBasicMaterial color="red" side={THREE.DoubleSide} />
+        {/* Materials: https://medium.com/geekculture/threejs-tutorial-comparing-the-most-common-materials-424eef8942a4 */}
+        {/* MeshBasicMaterial: Meshes that apply this material usually show only a single colour and lighting does not affect it */}
+        {/* MeshLambertMaterial: uses the Lambertian reflectance to simulate the lighting on non-shiny or matte surfaces. Lighting is calculated at each vertex of your model and interpolated between vertexes. You can also provide it a "emissive" property.*/}
+        {/* MeshPhongMaterial: it can simulate shiny surfaces with specular lighting. Lighting is calculated per pixel instead of per vertex, so the result is more realistic. You can set the "shinininess" property. */}
+        {/* MeshStandardMaterial: Provides very realistic lightning. Lighting is calculated per-pixel for maximum accuracy, like MeshPhongMaterial. You can provide it "roughness" and "metalness" attributes. */}
+        <meshStandardMaterial color="red" side={THREE.DoubleSide} />
       </mesh>
     </>
   );
